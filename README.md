@@ -126,3 +126,4 @@ npm start
 - Always ensure `.env` and `database.db` have proper file permissions on the server.
 - Keep `JWT_SECRET` secret and at least 32 random characters long.
 - Regularly back up `database.db` and the `uploads/` folder.
+

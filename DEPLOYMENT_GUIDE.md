@@ -83,3 +83,4 @@ DEFAULT_ADMIN_PASSWORD=your-secure-admin-password
      - Root URL: `https://your-domain.com/`
      - CSS: `https://your-domain.com/print.css`
      - Manifest: `https://your-domain.com/manifest.webmanifest`
+
