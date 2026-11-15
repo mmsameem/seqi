@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: seqi-webapp
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node server.js
+    disk:
+      name: seqi-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_PATH
+        value: /var/data/database.db
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEFAULT_ADMIN_USERNAME
+        value: admin
+      - key: DEFAULT_ADMIN_PASSWORD
+        sync: false

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SEQI Evaluation</string>
+    <string name="title_activity_main">SEQI Evaluation</string>
+    <string name="package_name">com.seqi.app</string>
+    <string name="custom_url_scheme">com.seqi.app</string>
+</resources>
