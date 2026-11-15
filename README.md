@@ -53,7 +53,7 @@ git push -u origin main
 
 ## 🌐 Deployment Options
 
-### Option 1: Deploy on Render (Recommended)
+### Option 1: Deploy on Render (Recommended for Full-Stack)
 
 1. Sign up on [Render.com](https://render.com).
 2. Click **New +** > **Blueprint**.
@@ -65,6 +65,25 @@ git push -u origin main
    - Persistent Disk attached for SQLite database and uploads
 5. Set your `DEFAULT_ADMIN_PASSWORD` in the Render environment variables dashboard.
 6. Click **Apply** to deploy!
+
+---
+
+### Option 2: Deploy Frontend on Vercel + Backend on Render/Railway (Hybrid)
+
+Vercel is ideal for high-speed frontend hosting:
+1. Push your repository to GitHub.
+2. Deploy the backend (`server.js` + SQLite) to **Render** or **Railway** so data persists.
+3. Import your GitHub repository into **[Vercel](https://vercel.com)**:
+   - Framework Preset: **Other**
+   - Output Directory: **`dist`**
+4. Update `vercel.json` with your backend URL:
+   ```json
+   {
+     "source": "/api/(.*)",
+     "destination": "https://your-backend.onrender.com/api/$1"
+   }
+   ```
+5. Deploy! Vercel serves the fast static UI and proxies all API and upload requests to your persistent backend.
 
 ---
 
