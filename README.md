@@ -1,175 +1,105 @@
-# SEQI Platform — Web Application
+# SEQI Platform — Deployment Guide for GitHub & Vercel
 
-SEQI is a full-stack educational quality evaluation platform built with Node.js, Express, Better-SQLite3, and a modern React client interface.
-
----
-
-## 📌 Architecture Overview
-
-- **Backend:** Node.js (ESM), Express.js REST API (`server.js`)
-- **Database:** SQLite (`database.db`) using `better-sqlite3` (self-initializing schema)
-- **Frontend:** React SPA (pre-compiled in `dist/`, served by Express)
-- **Authentication:** JWT tokens with bcrypt password hashing
-- **File Uploads:** Multer with persistent storage
+SEQI is an institutional educational quality evaluation platform consisting of a high-performance React client and an Express.js backend with an SQLite persistence layer.
 
 ---
 
-## ⚠️ Important Note: GitHub Pages vs Full-Stack Hosting
+## 🏗 System Architecture on Vercel
 
-> [!IMPORTANT]
-> **GitHub Pages only hosts static files (HTML, CSS, JS).**
-> Because SEQI requires a Node.js backend (`server.js`) and an SQLite database to handle authentication, scoring calculations, and data persistence, **SEQI cannot run exclusively on GitHub Pages**.
->
-> To deploy SEQI from GitHub, push your code to a GitHub repository, then link that repository to a hosting platform supporting Node.js and persistent storage (such as **Render**, **Railway**, **Fly.io**, or any **Docker / VPS** host).
+Vercel is a **serverless edge platform** designed for fast frontend hosting and stateless APIs. Because SQLite (`database.db`) and uploaded files require **persistent storage** (which serverless functions wipe on cold starts), SEQI is configured for the **industry-standard hybrid deployment**:
 
----
-
-## 🚀 Quick Setup & Pushing to GitHub
-
-### 1. Initialize Git & Create Initial Commit
-Run these commands in the project directory:
-
-```bash
-# Initialize git repository
-git init
-
-# Stage all files (sensitive files and large binaries are excluded by .gitignore)
-git add .
-
-# Create your first commit
-git commit -m "Initial commit: prepare SEQI platform for GitHub deployment"
+```
+[ User Browser ]
+       │
+       ▼
+[ Vercel Edge CDN ] ────► Serves React Frontend (dist/) instantaneously
+       │
+       ▼ (/api/* and /uploads/* proxied via api/proxy.js)
+[ Render / Railway / VPS ] ────► Runs server.js with Persistent SQLite database
 ```
 
-### 2. Push to GitHub
-1. Create a new repository on [GitHub](https://github.com/new) (e.g. `seqi-webapp`).
-2. Run:
+- **Frontend on Vercel:** Ultra-fast, global CDN, automated deployments on git push.
+- **Backend on Render / Railway / VPS:** Keeps your SQLite database (`database.db`) safe and persistent across restarts.
+- **Seamless Proxy:** `api/proxy.js` automatically forwards all API calls from Vercel to your backend based on the `BACKEND_URL` environment variable.
+
+---
+
+## 🚀 Step 1: Push Repository to GitHub
+
+Open a terminal in the project directory (`SEQI_Final - Copy`) and run:
+
 ```bash
+# 1. Add all prepared files (sensitive credentials and heavy binaries are excluded by .gitignore)
+git add .
+
+# 2. Commit the changes
+git commit -m "Configure Vercel proxy and deployment settings"
+
+# 3. Link to your GitHub repository (replace with your repo URL)
 git branch -M main
 git remote add origin https://github.com/<YOUR_USERNAME>/<YOUR_REPOSITORY>.git
+
+# 4. Push to GitHub
 git push -u origin main
 ```
 
 ---
 
-## 🌐 Deployment Options
+## ⚡ Step 2: Deploy Frontend to Vercel
 
-### Option 1: Deploy on Render (Recommended for Full-Stack)
+1. Log in to [Vercel](https://vercel.com).
+2. Click **Add New...** > **Project**.
+3. Import your GitHub repository (`<YOUR_REPOSITORY>`).
+4. In the project configuration:
+   - **Framework Preset:** `Other`
+   - **Root Directory:** `./`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+5. Click **Deploy**.
 
-1. Sign up on [Render.com](https://render.com).
+> 💡 Your React web app is now live on Vercel!
+
+---
+
+## 🗄 Step 3: Deploy the Persistent Backend (Render or Railway)
+
+To enable database persistence (user login, score saving, teacher evaluations, uploads):
+
+### Option A: Render (Free & 1-Click with `render.yaml`)
+1. Log in to [Render.com](https://render.com).
 2. Click **New +** > **Blueprint**.
 3. Connect your GitHub repository.
-4. Render will automatically detect `render.yaml` and configure:
-   - Node.js runtime
-   - Build command: `npm install`
-   - Start command: `node server.js`
-   - Persistent Disk attached for SQLite database and uploads
-5. Set your `DEFAULT_ADMIN_PASSWORD` in the Render environment variables dashboard.
-6. Click **Apply** to deploy!
+4. Render automatically reads [`render.yaml`](file:///i:/SEQI_Final%20-%20Copy/render.yaml), attaches a persistent disk for `database.db`, and deploys the backend.
+5. In Render's dashboard, set `DEFAULT_ADMIN_PASSWORD` (min 8 characters).
+6. Copy your Render backend service URL (e.g., `https://seqi-backend.onrender.com`).
 
----
-
-### Option 2: Deploy Frontend on Vercel + Backend on Render/Railway (Hybrid)
-
-Vercel is ideal for high-speed frontend hosting:
-1. Push your repository to GitHub.
-2. Deploy the backend (`server.js` + SQLite) to **Render** or **Railway** so data persists.
-3. Import your GitHub repository into **[Vercel](https://vercel.com)**:
-   - Framework Preset: **Other**
-   - Output Directory: **`dist`**
-4. Update `vercel.json` with your backend URL:
-   ```json
-   {
-     "source": "/api/(.*)",
-     "destination": "https://your-backend.onrender.com/api/$1"
-   }
-   ```
-5. Deploy! Vercel serves the fast static UI and proxies all API and upload requests to your persistent backend.
-
----
-
-### Option 2: Deploy with Docker & Docker Compose (Any VPS)
-
-This repository includes a production-ready `Dockerfile` and `docker-compose.yml`.
-
-To deploy on any server with Docker installed:
-
-```bash
-# Clone the repository
-git clone https://github.com/<YOUR_USERNAME>/<YOUR_REPOSITORY>.git
-cd <YOUR_REPOSITORY>
-
-# Set environment variables in .env
-cp .env.example .env
-# Edit .env with your JWT secret and admin password:
-nano .env
-
-# Build and start container in background
-docker compose up -d --build
-```
-
-The application will start on `http://YOUR_SERVER_IP:3000`.
-
----
-
-### Option 3: Deploy on Railway
-
-1. Sign in to [Railway.app](https://railway.app).
-2. Click **New Project** > **Deploy from GitHub repo**.
-3. Select your repository.
-4. Add a **Persistent Volume** mounted to `/app` (or configure `DATABASE_PATH` and `UPLOAD_DIR` to a mounted volume).
-5. In **Variables**, set:
+### Option B: Railway
+1. Go to [Railway.app](https://railway.app) > **New Project** > **Deploy from GitHub repo**.
+2. Add a persistent volume mounted to `/app/data`.
+3. In **Variables**, set:
    - `NODE_ENV=production`
-   - `JWT_SECRET=<strong-random-key-32-chars>`
+   - `JWT_SECRET=your-32-char-random-jwt-secret`
    - `DEFAULT_ADMIN_USERNAME=admin`
-   - `DEFAULT_ADMIN_PASSWORD=<your-strong-password>`
-6. Railway will automatically build and deploy the app.
+   - `DEFAULT_ADMIN_PASSWORD=your-strong-password`
+   - `DATABASE_PATH=/app/data/database.db`
+4. Copy your public service URL.
 
 ---
 
-### Option 4: Deploy on Ubuntu / Debian VPS with PM2
+## 🔗 Step 4: Connect Vercel to Your Backend
 
-```bash
-# Install Node.js 20 & build tools
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs build-essential
+Once your backend is running:
+1. In your **Vercel Project Dashboard**, go to **Settings** > **Environment Variables**.
+2. Add a new variable:
+   - **Key:** `BACKEND_URL`
+   - **Value:** `https://your-backend-url.onrender.com` (your backend URL without trailing slash)
+3. Click **Save** and trigger a **Redeploy** on Vercel.
 
-# Clone and enter project
-git clone https://github.com/<YOUR_USERNAME>/<YOUR_REPOSITORY>.git
-cd <YOUR_REPOSITORY>
-
-# Install dependencies
-npm ci --omit=dev
-
-# Configure environment
-cp .env.example .env
-nano .env
-
-# Install PM2 process manager
-sudo npm install -g pm2
-
-# Start application
-pm2 start server.js --name "seqi"
-pm2 save
-pm2 startup
-```
+Your Vercel deployment will now proxy all authentication, scoring, and file uploads directly to your persistent database.
 
 ---
 
-## 🔐 Environment Variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `NODE_ENV` | Yes | `production` | Environment mode (`production` or `development`) |
-| `PORT` | No | `3000` | HTTP port the server listens on |
-| `JWT_SECRET` | Yes | None | Secret key for signing authentication tokens (min 32 chars) |
-| `DATABASE_PATH` | No | `database.db` | File path for SQLite database |
-| `UPLOAD_DIR` | No | `uploads` | Directory for uploaded attachments |
-| `DEFAULT_ADMIN_USERNAME` | No | `admin` | Initial administrator username |
-| `DEFAULT_ADMIN_PASSWORD` | Yes (in prod) | None | Initial administrator password (min 8 chars) |
-
----
-
-## 🛠 Local Development
+## 💻 Local Running
 
 ```bash
 # Install dependencies
@@ -178,4 +108,4 @@ npm install
 # Start server locally
 npm start
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Server runs on [http://localhost:3000](http://localhost:3000).

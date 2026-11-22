@@ -12,12 +12,12 @@
       "destination": "/favicon.svg"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "https://YOUR-BACKEND-URL.onrender.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "/api/proxy"
     },
     {
-      "source": "/uploads/(.*)",
-      "destination": "https://YOUR-BACKEND-URL.onrender.com/uploads/$1"
+      "source": "/uploads/:path*",
+      "destination": "/api/proxy"
     },
     {
       "source": "/(.*)",
