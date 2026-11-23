@@ -369,6 +369,30 @@ app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
     }
     res.json({ url: `/uploads/${req.file.filename}` });
 });
+app.delete('/api/upload', authenticate, (req, res) => {
+    try {
+        const fileUrl = req.body?.url;
+        if (!fileUrl || typeof fileUrl !== 'string') {
+            return res.status(400).json({ success: false, message: 'File URL is required' });
+        }
+        const filename = path.basename(fileUrl);
+        const filePath = path.resolve(uploadsDir, filename);
+
+        // Security check: ensure target path is strictly within uploadsDir
+        if (!filePath.startsWith(uploadsDir)) {
+            return res.status(403).json({ success: false, message: 'Forbidden file path' });
+        }
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`Deleted uploaded file: ${filename}`);
+        }
+        res.json({ success: true, message: 'File removed successfully' });
+    } catch (err) {
+        console.error('File deletion error:', err);
+        res.status(500).json({ success: false, message: 'Failed to delete file' });
+    }
+});
 app.use('/uploads', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
