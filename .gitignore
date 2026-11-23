@@ -21,6 +21,7 @@ uploads/*
 # Large executables, installers, and packages
 *.exe
 *.apk
+!dist/seqi-app.apk
 *.zip
 SetupInstaller.exe
 app-debug.apk

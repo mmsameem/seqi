@@ -5,6 +5,7 @@ const config: CapacitorConfig = {
   appName: 'SEQI Evaluation',
   webDir: 'dist',
   server: {
+    url: 'https://seqi.vercel.app',
     androidScheme: 'https',
     cleartext: true
   }

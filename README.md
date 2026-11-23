@@ -109,3 +109,44 @@ npm install
 npm start
 ```
 Server runs on [http://localhost:3000](http://localhost:3000).
+
+
+Step 1: Deploy the Backend on Render (Free, 2 minutes)
+Open dashboard.render.com and sign in with your GitHub account (mmsameem).
+Click New + > Web Service.
+Select your repository: mmsameem/seqi.
+Fill in these settings:
+Name: seqi-backend
+Runtime: Node
+Build Command: npm install
+Start Command: node server.js
+Instance Type: Select Free
+Scroll down to Environment Variables and add these two:
+NODE_ENV = production
+JWT_SECRET = seqi-super-secure-token-secret-at-least-32-characters
+Click Deploy Web Service.
+Wait 1–2 minutes until it shows Live, then copy your Render URL at the top (e.g. https://seqi-backend.onrender.com).
+Step 2: Connect the URL to Vercel
+Go to your Vercel Dashboard and click on your seqi project.
+Go to Settings > Environment Variables.
+Add:
+Key: BACKEND_URL
+Value: https://seqi-backend.onrender.com (paste your actual Render URL from Step 1, without a trailing /)
+Go to the Deployments tab, click the three dots ... next to your latest deployment, and click Redeploy.
+🎉 Step 3: Log In!
+
+Open seqi.vercel.app and click Sign In. The red message will disappear, and you will be logged into your dashboard!
+
+---
+
+## 📱 Android APK (Mobile Application)
+
+A native Android APK is built and ready for mobile devices:
+- **Location:** `seqi-app.apk` (in repository root)
+- **Direct Download:** `https://seqi.vercel.app/seqi-app.apk`
+- **Features:**
+  - Connected directly to `https://seqi.vercel.app` (live synchronization with backend)
+  - Native Android Printing & PDF export support via `AndroidPrinter` interface
+  - Mobile-optimized interface with notch safe-area handling (`viewport-fit=cover`)
+  - No accidental zoom or double-tap lag on mobile touchscreens
+  - Dark institutional theme (#0A0B0D) matches the web app
