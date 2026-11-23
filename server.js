@@ -353,12 +353,21 @@ app.post('/api/reset', authenticate, requireAdmin, (req, res) => {
 });
 // Uploads
 const storage = multer.diskStorage({
-    destination: uploadsDir,
+    destination: (req, file, cb) => {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+        cb(null, uploadsDir);
+    },
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
-const upload = multer({ storage });
+const upload = multer({
+    storage,
+    limits: { fileSize: 25 * 1024 * 1024 }
+});
 app.post('/api/upload', authenticate, upload.single('file'), (req, res) => {
-    res.json({ url: `/uploads/${req.file?.filename}` });
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    res.json({ url: `/uploads/${req.file.filename}` });
 });
 app.use('/uploads', (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
